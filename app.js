@@ -9,39 +9,22 @@ var query = {
 };
 
 generateDynamicQueryCondition: (queryParams) => {
-  //filter out offset and limit
-  let paramKeys = Object.keys(queryParams).filter((key) => !['offset', 'limit'].includes(key));
-  
-  //simply return empty string when no filter key is passed in
+  let paramKeys = Object.keys(queryParams).filter((key) => !['offset', 'limit', 'sort'].includes(key));
   if(!paramKeys.length) return ``;  
-
-  let queryObj = ` WHERE `, count = 0;
-
-  paramKeys.forEach((paramKey) => {
-    if(count) queryObj +=  ` AND `;
-
-    let paramValue = queryParams[paramKey];
-    //Add the key to query object
-    queryObj += `name='${paramKey}' AND `;
-
-    //pattern match 
-    if(paramValue.includes('match')){
-      let value = paramValue.split('/')[1];
-      queryObj += (value.toLowerCase() === 'nobody') ? 
-                              (`(value = '' OR value IS NULL)`) : (`value LIKE '%${value}%'`)
+  
+  return ' WHERE ' + paramKeys.map(function(v, index, vals) {
+    let filter = `name='${v}' AND `, 
+      value = queryParams[v];
+    
+    if (v.includes('match')) {
+      let subVal = value.split('/')[1];
+      return (value.toLowerCase() === 'nobody') ?
+        filter + `(value = '' OR value IS NULL)` : filter + `value LIKE '%${value}%'`);
+    } // does `ne` match anything that isn't the filter?
+    if (v.includes('ne') {
+      let subVal = value.split('=')[1];
+      return filter + `value <> '${value}'`;
     }
-    //not equal to matcher 
-    else if(paramValue.includes('ne')){
-      let value = paramValue.split('=')[1];
-      queryObj += `value <> '${value}'`;
-    }
-    //equality match
-    else{
-      queryObj += `value = '${paramValue}'`;
-    }
-    // queryObj += `)`
-    count++;
-  });
-
-  return queryObj;
+    return filter + `value = '${value}'`;
+  }).join(' AND ');  
 }

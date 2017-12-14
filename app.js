@@ -1,3 +1,13 @@
+var query = {
+  DBA:"False",
+  Distributor:"Distributors",
+  limit:"5000",
+  offset:"0",
+  Owner:"match=/chris/i",
+  Priority:"ne=Fast Track",
+  Tags:"match=/new/i"
+};
+
 generateDynamicQueryCondition: (queryParams) => {
   //filter out offset and limit
   let paramKeys = Object.keys(queryParams).filter((key) => !['offset', 'limit'].includes(key));
@@ -9,7 +19,7 @@ generateDynamicQueryCondition: (queryParams) => {
 
   paramKeys.forEach((paramKey) => {
     if(count) queryObj +=  ` AND `;
-    
+
     let paramValue = queryParams[paramKey];
     //Add the key to query object
     queryObj += `name='${paramKey}' AND `;
